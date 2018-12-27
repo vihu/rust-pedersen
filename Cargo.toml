@@ -1,0 +1,9 @@
+[package]
+name = "rust-pedersen"
+version = "0.1.0"
+authors = ["Rahul Garg <vihu89@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+openssl-sys = "0.9"
+openssl = "0.10"
