@@ -1,5 +1,6 @@
 use openssl::bn::{BigNum, BigNumContext};
 use openssl::error::ErrorStack;
+use std::fmt;
 
 pub struct PedersenCommitment {
     pub p: BigNum,
@@ -7,6 +8,16 @@ pub struct PedersenCommitment {
     pub g: BigNum,
     pub h: BigNum,
     pub ctx: BigNumContext
+}
+
+impl fmt::Debug for PedersenCommitment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "PedersenCommitment {{ p: {}, q: {}, g: {}, h: {} }}",
+            self.p, self.q, self.g, self.h
+        )
+    }
 }
 
 impl PedersenCommitment {
@@ -103,6 +114,7 @@ fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, Big
 #[test]
 fn test() {
     let mut commitment = PedersenCommitment::new(512).unwrap();
+    println!("commitment {:#?}", commitment);
 
     let msg1 = 500;
 
