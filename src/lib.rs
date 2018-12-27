@@ -1,17 +1,27 @@
 use openssl::bn::{BigNum, BigNumContext};
 use openssl::error::ErrorStack;
+use std::fmt;
 
 pub struct PedersenCommitment {
     pub p: BigNum,
     pub q: BigNum,
     pub g: BigNum,
     pub h: BigNum,
-    pub ctx: BigNumContext
+    pub ctx: BigNumContext,
+}
+
+impl fmt::Debug for PedersenCommitment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "PedersenCommitment {{ p: {}, q: {}, g: {}, h: {} }}",
+            self.p, self.q, self.g, self.h
+        )
+    }
 }
 
 impl PedersenCommitment {
-    pub fn new(security: i32) -> Result< PedersenCommitment, ErrorStack > {
-
+    pub fn new(security: i32) -> Result<PedersenCommitment, ErrorStack> {
         // create context to manage the bignum
         let mut ctx = BigNumContext::new()?;
 
@@ -28,33 +38,34 @@ impl PedersenCommitment {
         q.checked_add(&tmp, &one)?;
 
         // generate random BigNum between 1, p-1
-        let g = BigNum::from_u32(1)?;
         let mut tmp2 = BigNum::new()?;
         tmp2.checked_sub(&p, &one)?;
         let mut tmp3 = BigNum::new()?;
         tmp3.checked_add(&g, &one)?;
-        g.rand_range(&mut tmp2)?;
+        tmp2.rand_range(&mut g)?;
 
         // generate secret alpha between 1, p-1
-        let alpha = BigNum::from_u32(1)?;
         let mut tmp4 = BigNum::new()?;
         tmp4.checked_sub(&p, &one)?;
         let mut tmp5 = BigNum::new()?;
         tmp5.checked_add(&g, &one)?;
-        alpha.rand_range(&mut tmp4)?;
+        tmp4.rand_range(&mut alpha)?;
 
         // calculate h = pow(g, alpha, p)
         let mut h = BigNum::new()?;
         h.mod_exp(&g, &alpha, &p, &mut ctx)?;
 
-        Ok(Self{p, q, g, h, ctx})
+        Ok(Self { p, q, g, h, ctx })
     }
 }
 
-fn pedersen_open(cmt: &mut PedersenCommitment, c: &BigNum, x: u32, args: &[BigNum]) -> Result< bool, ErrorStack > {
-    let total = args.iter().fold(BigNum::new()?, |acc, x| {
-        &acc + x
-    });
+fn pedersen_open(
+    cmt: &mut PedersenCommitment,
+    c: &BigNum,
+    x: u32,
+    args: &[BigNum],
+) -> Result<bool, ErrorStack> {
+    let total = args.iter().fold(BigNum::new()?, |acc, x| &acc + x);
 
     // res: open commitment
     let x1 = BigNum::from_u32(x)?;
@@ -69,16 +80,14 @@ fn pedersen_open(cmt: &mut PedersenCommitment, c: &BigNum, x: u32, args: &[BigNu
 }
 
 fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result<BigNum, ErrorStack> {
-    let res = cm.iter().fold(BigNum::from_u32(1)?, |acc, x| {
-        &acc * x
-    });
+    let res = cm.iter().fold(BigNum::from_u32(1)?, |acc, x| &acc * x);
 
     let mut tmp = BigNum::new()?;
     tmp.nnmod(&res, &cmt.q, &mut cmt.ctx)?;
     Ok(tmp)
 }
 
-fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, BigNum), ErrorStack> {
+fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result<(BigNum, BigNum), ErrorStack> {
     let one = BigNum::from_u32(1)?;
     // generate random number between 1, q-1
     let r = BigNum::from_u32(1)?;
@@ -103,6 +112,7 @@ fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, Big
 #[test]
 fn test() {
     let mut commitment = PedersenCommitment::new(512).unwrap();
+    println!("commitment {:#?}", commitment);
 
     let msg1 = 500;
 
