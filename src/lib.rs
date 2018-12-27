@@ -28,7 +28,7 @@ impl PedersenCommitment {
         q.checked_add(&tmp, &one)?;
 
         // generate random BigNum between 1, p-1
-        let g = BigNum::new()?;
+        let g = BigNum::from_u32(1)?;
         let mut tmp2 = BigNum::new()?;
         tmp2.checked_sub(&p, &one)?;
         let mut tmp3 = BigNum::new()?;
@@ -36,7 +36,7 @@ impl PedersenCommitment {
         g.rand_range(&mut tmp2)?;
 
         // generate secret alpha between 1, p-1
-        let alpha = BigNum::new()?;
+        let alpha = BigNum::from_u32(1)?;
         let mut tmp4 = BigNum::new()?;
         tmp4.checked_sub(&p, &one)?;
         let mut tmp5 = BigNum::new()?;
@@ -81,7 +81,7 @@ fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result<BigNum, E
 fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, BigNum), ErrorStack> {
     let one = BigNum::from_u32(1)?;
     // generate random number between 1, q-1
-    let r = BigNum::new()?;
+    let r = BigNum::from_u32(1)?;
     let mut tmp1 = BigNum::new()?;
     tmp1.checked_sub(&cmt.p, &one)?;
     let mut tmp2 = BigNum::new()?;
