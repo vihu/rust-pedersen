@@ -68,11 +68,10 @@ impl PedersenCommitment {
 
 fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result< BigNum, ErrorStack> {
     // XXX: this is most definitely *wrong*
-    let one = BigNum::from_u32(1)?;
-    let mut res = BigNum::new()?;
-    for c in cm {
-        res.checked_mul(&one, &c, &mut cmt.ctx)?;
-    }
+    let mut initial = BigNum::from_u32(1)?;
+
+    let res = cm.iter().fold(initial, |mut acc, x| acc.checked_mul(&acc, &x, &mut cmt.ctx));
+
     let mut tmp = BigNum::new()?;
     tmp.nnmod(&res, &cmt.q, &mut cmt.ctx)?;
     Ok(tmp)
