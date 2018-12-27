@@ -1,7 +1,6 @@
 use openssl::bn::{BigNum, BigNumContext};
 use openssl::error::ErrorStack;
 
-// Why I do what I do, I don't know
 pub struct PedersenCommitment {
     pub p: BigNum,
     pub q: BigNum,
@@ -48,17 +47,11 @@ impl PedersenCommitment {
         let mut h = BigNum::new()?;
         h.mod_exp(&g, &alpha, &p, &mut ctx)?;
 
-        Ok(PedersenCommitment {
-            p: p,
-            q: q,
-            g: g,
-            h: h,
-            ctx: ctx
-        })
+        Ok(Self{p, q, g, h, ctx})
     }
 }
 
-fn pedersen_open(cmt: &mut PedersenCommitment, c: BigNum, x: u32, args: &[BigNum]) -> Result< bool, ErrorStack > {
+fn pedersen_open(cmt: &mut PedersenCommitment, c: &BigNum, x: u32, args: &[BigNum]) -> Result< bool, ErrorStack > {
     let total = args.iter().fold(BigNum::new()?, |acc, x| {
         &acc + x
     });
@@ -72,7 +65,7 @@ fn pedersen_open(cmt: &mut PedersenCommitment, c: BigNum, x: u32, args: &[BigNum
     tmp2.mod_exp(&cmt.h, &total, &cmt.q, &mut cmt.ctx)?;
     res.mod_mul(&tmp1, &tmp2, &cmt.q, &mut cmt.ctx)?;
 
-    Ok(res == c)
+    Ok(&res == c)
 }
 
 fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result<BigNum, ErrorStack> {
@@ -105,4 +98,15 @@ fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, Big
     c.mod_mul(&tmp3, &tmp4, &cmt.q, &mut cmt.ctx)?;
 
     Ok((c, r))
+}
+
+#[test]
+fn test() {
+    let mut commitment = PedersenCommitment::new(512).unwrap();
+
+    let msg1 = 500;
+
+    let (c1, r1) = pedersen_commit(&mut commitment, msg1).unwrap();
+
+    println!("c1: {}, r1: {}", c1, r1)
 }
