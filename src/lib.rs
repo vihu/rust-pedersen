@@ -7,7 +7,7 @@ pub struct PedersenCommitment {
     pub q: BigNum,
     pub g: BigNum,
     pub h: BigNum,
-    pub ctx: BigNumContext
+    pub ctx: BigNumContext,
 }
 
 impl fmt::Debug for PedersenCommitment {
@@ -21,8 +21,7 @@ impl fmt::Debug for PedersenCommitment {
 }
 
 impl PedersenCommitment {
-    pub fn new(security: i32) -> Result< PedersenCommitment, ErrorStack > {
-
+    pub fn new(security: i32) -> Result<PedersenCommitment, ErrorStack> {
         // create context to manage the bignum
         let mut ctx = BigNumContext::new()?;
 
@@ -58,14 +57,17 @@ impl PedersenCommitment {
         let mut h = BigNum::new()?;
         h.mod_exp(&g, &alpha, &p, &mut ctx)?;
 
-        Ok(Self{p, q, g, h, ctx})
+        Ok(Self { p, q, g, h, ctx })
     }
 }
 
-fn pedersen_open(cmt: &mut PedersenCommitment, c: &BigNum, x: u32, args: &[BigNum]) -> Result< bool, ErrorStack > {
-    let total = args.iter().fold(BigNum::new()?, |acc, x| {
-        &acc + x
-    });
+fn pedersen_open(
+    cmt: &mut PedersenCommitment,
+    c: &BigNum,
+    x: u32,
+    args: &[BigNum],
+) -> Result<bool, ErrorStack> {
+    let total = args.iter().fold(BigNum::new()?, |acc, x| &acc + x);
 
     // res: open commitment
     let x1 = BigNum::from_u32(x)?;
@@ -80,16 +82,14 @@ fn pedersen_open(cmt: &mut PedersenCommitment, c: &BigNum, x: u32, args: &[BigNu
 }
 
 fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result<BigNum, ErrorStack> {
-    let res = cm.iter().fold(BigNum::from_u32(1)?, |acc, x| {
-        &acc * x
-    });
+    let res = cm.iter().fold(BigNum::from_u32(1)?, |acc, x| &acc * x);
 
     let mut tmp = BigNum::new()?;
     tmp.nnmod(&res, &cmt.q, &mut cmt.ctx)?;
     Ok(tmp)
 }
 
-fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result <(BigNum, BigNum), ErrorStack> {
+fn pedersen_commit(cmt: &mut PedersenCommitment, x: u32) -> Result<(BigNum, BigNum), ErrorStack> {
     let one = BigNum::from_u32(1)?;
     // generate random number between 1, q-1
     let r = BigNum::new()?;
