@@ -14,7 +14,7 @@ impl fmt::Debug for PedersenCommitment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "PedersenCommitment {{ p: {}, \nq: {}, \ng: {}, \nh: {} }}",
+            "PedersenCommitment{{p: {}, \nq: {}, \ng: {}, \nh: {}}}",
             self.p, self.q, self.g, self.h
         )
     }
@@ -117,8 +117,22 @@ fn test() {
     println!("commitment {:#?}", commitment);
 
     let msg1 = 500;
+    let msg2 = 100;
+    let msg3 = 600;
 
     let (c1, r1) = pedersen_commit(&mut commitment, msg1).unwrap();
+    let (c2, r2) = pedersen_commit(&mut commitment, msg2).unwrap();
+    let (c3, r3) = pedersen_commit(&mut commitment, msg3).unwrap();
 
-    println!("c1: {}, r1: {}", c1, r1)
+    println!();
+    println!("c1: {}, \nr1: {}\n", c1, r1);
+    println!("c2: {}, \nr2: {}\n", c2, r2);
+    println!("c3: {}, \nr3: {}\n", c3, r3);
+
+    let add_cm = pedersen_add(&mut commitment, &[c1, c2, c3]).unwrap();
+    println!("add_cm: {}\n", add_cm);
+
+    let res = pedersen_open(&mut commitment, &add_cm, msg1+msg2+msg3, &[r1, r2, r3]).unwrap();
+    println!("res: {}\n", res)
+
 }
