@@ -58,19 +58,27 @@ impl PedersenCommitment {
     }
 }
 
-// fn pedersen_open(cmt: &mut PedersenCommitment, c: BigNum, x: u32, args: &[BigNum]) -> Result< BigNum, ErrorStack > {
-//     let total = BigNum::new()?;
-//
-//     for e in args {
-//         res.checked_add(&total, )
-//     }
-// }
+fn pedersen_open(cmt: &mut PedersenCommitment, c: BigNum, x: u32, args: &[BigNum]) -> Result< bool, ErrorStack > {
+    let total = args.iter().fold(BigNum::new()?, |acc, x| {
+        &acc + x
+    });
 
-fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result< BigNum, ErrorStack> {
-    // XXX: this is most definitely *wrong*
-    let mut initial = BigNum::from_u32(1)?;
+    // res: open commitment
+    let x1 = BigNum::from_u32(x)?;
+    let mut res = BigNum::new()?;
+    let mut tmp1 = BigNum::new()?;
+    let mut tmp2 = BigNum::new()?;
+    tmp1.mod_exp(&cmt.g, &x1, &cmt.q, &mut cmt.ctx)?;
+    tmp2.mod_exp(&cmt.h, &total, &cmt.q, &mut cmt.ctx)?;
+    res.mod_mul(&tmp1, &tmp2, &cmt.q, &mut cmt.ctx)?;
 
-    let res = cm.iter().fold(initial, |mut acc, x| acc.checked_mul(&acc, &x, &mut cmt.ctx));
+    Ok(res == c)
+}
+
+fn pedersen_add(cmt: &mut PedersenCommitment, cm: &[BigNum]) -> Result<BigNum, ErrorStack> {
+    let res = cm.iter().fold(BigNum::from_u32(1)?, |acc, x| {
+        &acc * x
+    });
 
     let mut tmp = BigNum::new()?;
     tmp.nnmod(&res, &cmt.q, &mut cmt.ctx)?;
