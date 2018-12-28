@@ -21,7 +21,7 @@ impl fmt::Debug for PedersenCommitment {
 }
 
 impl PedersenCommitment {
-    pub fn new(security: &i32) -> Result<PedersenCommitment, ErrorStack> {
+    pub fn new(security: i32) -> Result<PedersenCommitment, ErrorStack> {
         // create context to manage the bignum
         let mut ctx = BigNumContext::new()?;
         // generate prime number with 2*security bits
@@ -41,7 +41,7 @@ impl PedersenCommitment {
 
     pub fn open(&mut self, c: &BigNum, x: u32, args: &[&BigNum]) -> Result<bool, ErrorStack> {
         let total = args.iter().fold(BigNum::new()?, |acc, x| &acc + *x);
-        let res = self.helper(&x, &total)?;
+        let res = self.helper(x, &total)?;
         Ok(&res == c)
     }
 
@@ -52,14 +52,14 @@ impl PedersenCommitment {
         Ok(tmp)
     }
 
-    pub fn commit(&mut self, x: &u32) -> Result<(BigNum, BigNum), ErrorStack> {
+    pub fn commit(&mut self, x: u32) -> Result<(BigNum, BigNum), ErrorStack> {
         let r = gen_random(&self.p)?;
-        let c = self.helper(&x, &r)?;
+        let c = self.helper(x, &r)?;
         Ok((c, r))
     }
 
-    fn helper(&mut self, x: &u32, r: &BigNum) -> Result<BigNum, ErrorStack> {
-        let x1 = BigNum::from_u32(*x)?;
+    fn helper(&mut self, x: u32, r: &BigNum) -> Result<BigNum, ErrorStack> {
+        let x1 = BigNum::from_u32(x)?;
         let mut c = BigNum::new()?;
         let mut tmp3 = BigNum::new()?;
         let mut tmp4 = BigNum::new()?;
@@ -95,17 +95,16 @@ fn calculate_q(p: &BigNum, ctx: &mut BigNumContext) -> Result<BigNum, ErrorStack
 
 #[test]
 fn basic_test() {
-    let security = 512;
-    let mut commitment = PedersenCommitment::new(&security).unwrap();
+    let mut commitment = PedersenCommitment::new(512).unwrap();
     println!("commitment {:#?}", commitment);
 
     let msg1 = 500;
     let msg2 = 100;
     let msg3 = 600;
 
-    let (c1, r1) = commitment.commit(&msg1).unwrap();
-    let (c2, r2) = commitment.commit(&msg2).unwrap();
-    let (c3, r3) = commitment.commit(&msg3).unwrap();
+    let (c1, r1) = commitment.commit(msg1).unwrap();
+    let (c2, r2) = commitment.commit(msg2).unwrap();
+    let (c3, r3) = commitment.commit(msg3).unwrap();
 
     println!();
     println!("c1: {}, \nr1: {}\n", c1, r1);
