@@ -53,7 +53,7 @@ impl PedersenCommitment {
     }
 
     pub fn commit(&mut self, x: u32) -> Result<(BigNum, BigNum), ErrorStack> {
-        let r = gen_random(&self.p)?;
+        let r = gen_random(&self.q)?;
         let c = self.helper(x, &r)?;
         Ok((c, r))
     }
@@ -94,7 +94,7 @@ fn calculate_q(p: &BigNum, ctx: &mut BigNumContext) -> Result<BigNum, ErrorStack
 }
 
 #[test]
-fn basic_test() {
+fn test_basic() {
     let mut commitment = PedersenCommitment::new(512).unwrap();
     println!("commitment {:#?}", commitment);
 
