@@ -12,11 +12,12 @@ pub struct PedersenCommitment {
 
 impl fmt::Debug for PedersenCommitment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "PedersenCommitment{{p: {}, \nq: {}, \ng: {}, \nh: {}}}",
-            self.p, self.q, self.g, self.h
-        )
+        f.debug_struct("PedersenCommitment")
+            .field("p", &self.p)
+            .field("q", &self.q)
+            .field("g", &self.g)
+            .field("h", &self.h)
+            .finish()
     }
 }
 
